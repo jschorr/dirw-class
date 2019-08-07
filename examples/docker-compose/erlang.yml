@@ -1,0 +1,26 @@
+version: "3"
+services:
+  node1:
+    image: erlang:alpine
+    command: erl -noshell -name app@host1.com -setcookie ABCDEFG132456
+    container_name: host1.com
+    networks:
+      - net1
+
+  node2:
+    image: erlang:alpine
+    command: erl -noshell -name app@host2.com -setcookie ABCDEFG132456
+    container_name: host2.com
+    networks:
+     - net1
+
+  node3:
+    image: erlang:alpine
+    command: erl -noshell -name app@host3.com -setcookie ABCDEFG132456
+    container_name: host3.com
+    networks:
+     - net1
+
+networks:
+  net1:
+    driver: bridge

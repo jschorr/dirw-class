@@ -1,0 +1,16 @@
+FROM ubuntu
+
+ENV NH_VERSION=0.8.5
+
+RUN mkdir -p /app/tools
+
+WORKDIR /app/tools
+
+# Note: this is insecure and only shown so that you can see that the
+# ADD directive can pull from a remote source or add a local file (by
+# contrast, COPY can only copy over local files).  If you plan to pull
+# from a remote location, it should only be from a trusted repository.
+ADD https://github.com/raboof/nethogs/archive/v$NH_VERSION.tar.gz ./
+
+CMD ["ls", "-la"]
+

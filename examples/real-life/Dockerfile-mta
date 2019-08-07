@@ -1,0 +1,54 @@
+FROM acmeonline/acme_baseimage:0.9.19
+
+ENV UPDATED_AT 2016-08-25
+ENV DEBIAN_FRONTEND noninteractive
+ENV HOME /root
+ENV TERM xterm
+
+CMD ["/sbin/my_init"]
+
+EXPOSE 50025
+
+RUN apt-get update && \
+ apt-get install -y postfix heirloom-mailx && \
+ apt-get clean && \
+ rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+## Setting up mailer
+RUN echo "docker-`hostname`.acme.com" > /etc/mailname && \
+  sed -i 's/relayhost = /relayhost = mail.acme.com:25/g' /etc/postfix/main.cf && \
+  sed -i 's/#myorigin/myorigin/g' /etc/postfix/main.cf && \
+  sed -i "s/inet_protocols = all/inet_protocols = ipv4/g" /etc/postfix/main.cf && \
+  sed -i "s/mynetworks = .*/mynetworks = 127.0.0.0\/8 172.0.0.0\/8/g" /etc/postfix/main.cf && \
+  sed -i "s/destination d_mailinfo/#destination d_mailinfo/g" /etc/syslog-ng/syslog-ng.conf && \
+  sed -i "s/destination d_mailwarn/#destination d_mailwarn/g" /etc/syslog-ng/syslog-ng.conf && \
+  sed -i "s/destination d_mailerr/#destination d_mailerr/g" /etc/syslog-ng/syslog-ng.conf && \
+  echo "search acme.com" >> /etc/resolv.conf && \
+  sed -i 's/25\/tcp/50025\/tcp/g' /etc/services && \
+  mkfifo /var/spool/postfix/public/pickup
+
+# Log rotation
+COPY syslog-ng /etc/logrotate.d/syslog-ng
+RUN chmod 0644 /etc/logrotate.d/syslog-ng
+
+# Email interceptions
+RUN  echo "virtual_alias_maps = regexp:/etc/postfix/virtual" >> /etc/postfix/main.cf
+
+# Custom header for easier mail client filtering
+RUN echo "/^Content-Transfer-Encoding:/i PREPEND X-acme-TestEnv: Docker" > /etc/postfix/custom_header && \
+  echo "header_checks = regexp:/etc/postfix/custom_header" >> /etc/postfix/main.cf
+
+# Add runit entry for Postfix
+RUN mkdir -p /etc/service/postfix
+ADD postfix_init.sh /etc/service/postfix/run
+
+# Add other runtime scripts
+ADD fix_dns.sh /etc/my_init.d/01_fix_dns.sh
+ADD email_recipients.sh /etc/my_init.d/02_email_recipients.sh
+RUN chmod 0755 /etc/service/postfix/run && \
+  chmod 0755 /etc/my_init.d/01_fix_dns.sh && \
+  chmod 0755 /etc/my_init.d/02_email_recipients.sh
+
+# Preparing to run Postfix non-chrooted
+RUN cp /etc/services /var/spool/postfix/etc/services && \
+  sed -i "s/^smtp.*inet.*/smtp      inet  n       -       n       -       -       smtpd/g" /etc/postfix/master.cf

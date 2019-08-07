@@ -1,0 +1,55 @@
+FROM acme/acme_baseimage:0.0.5
+
+ENV UPDATED_AT 2016-08-25
+ENV DEBIAN_FRONTEND noninteractive
+ENV HOME /root
+
+CMD ["/sbin/my_init"]
+
+EXPOSE 10389
+
+ADD ltb-project.list /etc/apt/sources.list.d/
+
+RUN curl http://ltb-project.org/wiki/lib/RPM-GPG-KEY-LTB-project | \
+    apt-key add - && \
+    apt-get update && \
+    apt-get -y upgrade && \
+    apt-get -y install openldap-ltb \
+      openldap-ltb-dbg openldap-ltb-check-password \
+      openldap-ltb-contrib-overlays openldap-ltb-mdb-utils && \
+    apt-get clean
+
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Preparing the LDAP files
+ADD ldif_files/*.ldif /tmp/bootstrap_ldap/
+RUN chown -R ldap:ldap /tmp/bootstrap_ldap && \
+    chmod 640 /tmp/bootstrap_ldap/*.ldif
+
+# OpenLDAP configuration files
+ADD conf_files/slapd.conf /usr/local/openldap/etc/openldap/
+ADD conf_files/slapd-default /etc/default/slapd
+
+# Installing the domain schema
+ADD schemas/acme.schema /usr/local/openldap/etc/openldap/schema/
+
+# OpenLDAP file permissions
+RUN chmod 640 /usr/local/openldap/etc/openldap/slapd.conf
+RUN chmod 640 /etc/default/slapd
+RUN mkdir -p /data/backups/openldap
+RUN chown -R ldap:ldap /data && \
+    chown -R ldap:ldap /usr/local/openldap
+
+# Debug
+RUN echo "export TERM=xterm" >> /root/.bashrc && \
+    echo "PATH=$PATH:/usr/local/openldap/bin:/usr/local/openldap/sbin:/usr/local/openldap/libexec" >> /root/.bashrc
+
+# Add initial data population script
+ADD initialize-openldap-data.sh /etc/my_init.d/01_initialize-openldap-data.sh
+RUN chmod 0755 /etc/my_init.d/01_initialize-openldap-data.sh
+
+# Add runit entry for OpenLDAP
+RUN mkdir -p /etc/service/openldap
+ADD openldap_init.sh /etc/service/openldap/run
+RUN chown -R root:root /etc/service/openldap && \
+    chmod 0755 /etc/service/openldap/run

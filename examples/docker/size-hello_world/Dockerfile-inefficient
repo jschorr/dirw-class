@@ -1,0 +1,9 @@
+FROM golang:latest
+
+WORKDIR /app
+
+COPY helloworld.go .
+
+RUN GOOS=linux go build -a -installsuffix cgo -o helloworld .
+
+CMD ["./helloworld"]

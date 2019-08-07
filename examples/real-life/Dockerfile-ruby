@@ -1,0 +1,41 @@
+FROM acmeonline/acme_passenger-ruby23:0.9.19
+
+ENV UPDATED_AT 2017-08-04
+ENV DEBIAN_FRONTEND noninteractive
+ENV TERM xterm
+ENV NEW_RELIC_AGENT_ENABLED false
+ENV RACK_ENV localhost
+
+EXPOSE 59292
+
+# Copy the Gemfile and Gemfile.lock to the application directory in preparation
+# for caching installation of gems. This will keep Docker from reinstalling
+# gems every time any change is made.
+RUN install -d -o app -g app -m 0755 /home/app/acme-reports-api
+ADD Gemfile Gemfile.lock /home/app/acme-reports-api/
+
+# Ensure that the local packages are up-to-date
+RUN apt-get update && apt-get upgrade -y -o Dpkg::Options::="--force-confold"
+
+# Install required libraries and binaries
+RUN apt-get -y install iputils-ping libmysqlclient-dev net-tools
+
+# Save space via cleaning
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+WORKDIR /home/app/acme-reports-api
+
+# Permissions
+RUN mkdir logs && chown -R app:app /home/app/acme-reports-api
+
+# App dependencies installation
+RUN /sbin/setuser app bundle install --jobs=4 --without="test" --deployment
+
+# Add in the rest of the code
+ADD . /home/app/acme-reports-api
+
+# Start the server automatically via "my_init"
+RUN cp /home/app/acme-reports-api/config/docker/api_server.sh /etc/my_init.d/01-api_server.sh && \
+  chmod +x /etc/my_init.d/01-api_server.sh
+
+CMD ["/sbin/my_init"]

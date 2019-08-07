@@ -1,0 +1,35 @@
+FROM elixir:alpine AS build
+
+ARG app_name=enforcer
+ARG BUILD_ENV=local
+
+ENV MIX_ENV=prod REPLACE_OS_VARS=true TERM=xterm
+
+RUN apk --no-cache add build-base libgcc nodejs nodejs-npm python && \
+  mix local.rebar --force && \
+  mix local.hex --force
+
+WORKDIR /app
+
+COPY . .
+
+RUN mix do deps.get, deps.compile, compile, release
+
+
+FROM alpine:3.9
+
+ENV PORT=4999 MIX_ENV=prod REPLACE_OS_VARS=true
+
+RUN apk --no-cache add bash ca-certificates openssl-dev
+
+WORKDIR /app
+
+COPY --from=build /app/_build/prod/rel/enforcer ./
+
+RUN chown -R nobody /app
+
+EXPOSE 4999
+
+USER nobody
+
+ENTRYPOINT ["/app/bin/enforcer", "start"]

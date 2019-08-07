@@ -1,0 +1,37 @@
+# Base Image
+FROM golang:1.12.5-alpine3.9 AS base
+
+ENV CGO_ENABLED 0
+ENV GOARCH amd64
+ENV GOOS linux
+
+LABEL name="acmeonline/system-generator" \
+  maintainer="joe_schmo@acme.com"
+
+COPY . /app
+
+WORKDIR /app
+
+RUN go build -ldflags="-w -s" -o system-generator
+
+
+# Runtime image
+FROM alpine:latest
+
+WORKDIR /app
+
+COPY --from=base /app/acme-system_generator .
+COPY --from=base /app/config ./config
+
+# Dependencies and security...
+RUN  addgroup -S acme && \
+  adduser -S -G acme warden && \
+  chown -R warden:acme /app && \
+  chown -R warden /app && \
+  apk add --no-cache bash git openssl && \
+  find / -perm +2000 -type f -exec chmod -R g-s {} \; && \
+  find / -perm +4000 -type f -exec chmod -R u-s {} \;
+
+USER warden
+
+ENTRYPOINT ["/app/acme-system_generator"]

@@ -1,0 +1,10 @@
+FROM ubuntu
+
+RUN mkdir -p /app/tools
+
+WORKDIR /app/tools
+
+RUN echo "helloworld" > ./helloworld.txt
+
+CMD ["ls", "-la"]
+

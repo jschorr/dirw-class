@@ -1,0 +1,24 @@
+FROM ubuntu
+
+ARG NETHOGS_VERSION=0.8.3
+ARG NETHOGS_PKG=nethogs-v$NETHOGS_VERSION.tar.gz
+ARG NETHOGS_DIR=nethogs-$NETHOGS_VERSION
+
+RUN mkdir -p /app/tools
+
+WORKDIR /app/tools
+
+RUN apt-get update
+RUN apt-get -y install build-essential libncurses5-dev libpcap-dev wget
+
+RUN wget -O $NETHOGS_PKG https://github.com/raboof/nethogs/archive/v$NETHOGS_VERSION.tar.gz
+RUN tar xvf $NETHOGS_PKG
+
+WORKDIR /app/tools/$NETHOGS_DIR
+
+RUN make
+RUN make install
+RUN hash -r
+
+CMD ["/usr/local/sbin/nethogs", "-V"]
+

@@ -1,0 +1,20 @@
+version: "3"
+services:
+  member1:
+    image: mongo:4.0.3
+    restart: always
+    entrypoint: [ "/usr/bin/mongod", "--replSet", "replset1", "--bind_ip_all" ]
+  member2:
+    image: mongo:4.0.3
+    restart: always
+    entrypoint: [ "/usr/bin/mongod", "--replSet", "replset1", "--bind_ip_all" ]
+  member3:
+    image: mongo:4.0.3
+    restart: always
+    entrypoint: [ "/usr/bin/mongod", "--replSet", "replset1", "--bind_ip_all" ]
+  commander:
+    image: mongo:4.0.3
+    volumes:
+      - /tmp/mongo-demo:/tmp
+    restart: always
+    entrypoint: [ "bash", "/tmp/mongodbsetup.sh" ]

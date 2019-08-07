@@ -1,0 +1,19 @@
+version: "3"
+services:
+  wordpress:
+    image: wordpress
+    links:
+    - mariadb:mysql
+    environment:
+    - WORDPRESS_DB_PASSWORD=V^TnM@D79928+892mWq3
+    ports:
+    - "80:80"
+    volumes:
+    - /tmp/wp-demo/html:/var/www/html
+  mariadb:
+    image: mariadb
+    environment:
+    - MYSQL_ROOT_PASSWORD=V^TnM@D79928+892mWq3
+    - MYSQL_DATABASE=wordpress
+    volumes:
+    - /tmp/wp-demo/database:/var/lib/mysql

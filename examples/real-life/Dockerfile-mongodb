@@ -1,0 +1,59 @@
+# Notes: Provides a MongoDB Docker container that auto-imports data specified by the user upon startup via the
+# startup.sh script.
+
+FROM alpine:ALPINE_VERSION
+ENV UPDATED_AT 2018-02-01
+
+EXPOSE 27017
+
+# Base packages
+RUN apk add --no-cache --update bash mongodb sudo
+
+# Create directories and set mongo client configs
+RUN \
+  mkdir -p /tmp/bootstrap_mongo/base && \
+  mkdir -p /tmp/bootstrap_mongo/data && \
+  mkdir -p /data/mongodb && \
+  touch /var/log/mongodb/mongod.log
+
+# Mongodb config and init files
+COPY mongod.conf /etc/mongod.conf
+COPY prep_mongodb.sh /tmp/bootstrap_mongo/prep_mongodb.sh
+COPY run_mongodb.sh /run_mongodb.sh
+
+RUN echo "DBQuery.prototype._prettyShell = true" >> /root/.mongorc.js && \
+  touch /root/.dbshell
+
+## MongoDB 3.6 network setting
+RUN sed -i "s/# bindIp: 127.0.0.1/bindIpAll: true/g" /etc/mongod.conf
+
+# Authorization key setup
+COPY mongodb_authkey /etc/mongodb_authkey
+RUN chown -R mongodb /etc/mongodb_authkey && chmod 600 /etc/mongodb_authkey
+
+# TLS setup
+# RUN openssl req -newkey rsa:2048 -new -x509 -days 365 -nodes \
+# -out /tmp/mongodb.crt -keyout /tmp/mongodb.key \
+# -subj "/C=US/ST=ALASKA/L=ANCHORAGE/O=acme/CN=docker.acme.com" && \
+# mkdir -p /etc/ssl/mongodb && \
+# cat /tmp/mongodb.key /tmp/mongodb.crt > /etc/ssl/mongodb/mongodb.pem
+
+# Scripts to setup mongodb authentication and the replica set
+COPY initialize_replicaset.js /tmp/bootstrap_mongo/base/01-initialize_replicaset.js
+COPY dbauth.js /tmp/bootstrap_mongo/base/02-dbauth.js
+
+# Default data set for import (if any)
+ADD data /tmp/bootstrap_mongo/data/
+
+# Permissions
+RUN \
+  chown -R mongodb:mongodb /data/mongodb && \
+  chown -R mongodb:mongodb /tmp/bootstrap_mongo/* && \
+  chmod 0700 /etc/init.d/mongodb && \
+  chmod 0700 /tmp/bootstrap_mongo/prep_mongodb.sh && \
+  chmod 0700 /run_mongodb.sh && \
+  chown mongodb:mongodb /var/log/mongodb/mongod.log
+
+ENTRYPOINT ["/bin/bash"]
+
+CMD ["/run_mongodb.sh"]

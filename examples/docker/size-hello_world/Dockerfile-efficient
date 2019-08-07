@@ -1,0 +1,20 @@
+# Build image
+FROM golang:latest AS build
+
+WORKDIR /app
+
+COPY helloworld.go .
+
+RUN GOOS=linux go build -a -installsuffix cgo -o helloworld .
+
+CMD ["./helloworld"]
+
+
+# Runtime image
+FROM scratch
+
+WORKDIR /app
+
+COPY --from=build /app/helloworld .
+
+CMD ["./helloworld"]
