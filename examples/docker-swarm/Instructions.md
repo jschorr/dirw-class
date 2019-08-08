@@ -1,7 +1,9 @@
 # Docker Swarm
 
-Docker Compose lets you setup a system which is composed of multiple containers, all *running on the different hosts*. Typically, you'll use a `stack` YAML file to deploy the services; see
-[https://docs.docker.com/engine/swarm/stack-deploy/](https://docs.docker.com/engine/swarm/stack-deploy/) for more information.
+Docker Swarm lets you setup a system which is composed of multiple containers, all *running on the different hosts*.
+Typically, you'll use a `stack` YAML file to deploy the services; see
+[https://docs.docker.com/engine/swarm/stack-deploy/](https://docs.docker.com/engine/swarm/stack-deploy/) for more
+information.
 
 ## Commands
 

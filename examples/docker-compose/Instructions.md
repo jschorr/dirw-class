@@ -28,6 +28,8 @@ Starting host3.com ... done
 (app@host2.com) 2> pong
 ```
 
+Discussion Questions:
+
 * Take the cluster down and try scaling node 3. You should run into an issue.  Discuss the cause and resolution.
 * Try pausing and resuming the cluster.
 * Try pausing node 2.
@@ -44,6 +46,8 @@ Note, if you're on a non-Linux box, ensure that Docker can access `/tmp`.
 ```
 
 Wait a minute or two as it'll take a little while for the database to be ready.
+
+Discussion Questions:
 
 * Change the `MYSQL_ROOT_PASSWORD` on line 16 of `wordpress.yml` and fire the cluster back up again.  What happens and why?
 * Change the `MYSQL_ROOT_PASSWORD` on line 16 of `wordpress.yml` and fire the cluster back up again.  What happens and why?
@@ -67,8 +71,13 @@ to the `commmander` container and view the replica set status:
 > exit
 ```
 
+Discussion Questions:
+
 * Try the `mongo` command via the `commander` container again *without* the port number. What happens and why?
 * Look at `docker network ls`.  There is one listed as `docker-compose_default` - why?
+* Please look at the `mongodb.yml` Docker Compose file. Why is this setup is pretty dangerous? Note that since there
+  are no mounted volumes for the data itself, we could lose data if a member node crashed and replication hadn't
+  completed.  Remember, it's critical to *not* count on a container to store state. How would we rectify this?
 
 ### Real-life
 
