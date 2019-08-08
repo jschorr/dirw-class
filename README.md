@@ -4,7 +4,7 @@ This project contains the resources for the `Docker in the Real World` class.
 
 ## Slides
 
-The slides for this project are at: [https://www.slideshare.net/JamesSchorr2/docker-in-therealworldoverview-162326489](https://www.slideshare.net/JamesSchorr2/docker-in-therealworldoverview-162326489).
+The slides for this project are at: [https://www.slideshare.net/JamesSchorr2/presentations](https://www.slideshare.net/JamesSchorr2/presentations). 
 
 ## Instructions
 
