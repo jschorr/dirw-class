@@ -1,0 +1,7 @@
+FROM nginx:1.17.3-alpine
+
+EXPOSE 80
+
+RUN apk add --no-cache bogus
+
+CMD ["nginx", "-g", "daemon off;"]

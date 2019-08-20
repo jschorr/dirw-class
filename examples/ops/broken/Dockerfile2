@@ -1,0 +1,11 @@
+FROM nginx:1.17.3-alpine
+
+EXPOSE 80
+
+WORKDIR /app
+
+COPY setup-nginx.sh ./
+
+RUN /app/setup-nginx.sh
+
+CMD ["nginx", "-g", "daemon off;"]
