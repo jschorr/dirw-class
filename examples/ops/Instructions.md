@@ -18,7 +18,14 @@ Successfully tagged nginx-working:latest
 > curl localhost:8080
 ```
 
-Stop the container before continuing: `> docker stop <containerId>`.
+Stop the container before continuing: 
+
+```bash
+# Find the container ID:
+> docker ps
+# Then stop the container:
+> docker stop <containerId>
+```
 
 ### Broken Build
 
@@ -79,7 +86,7 @@ Let's fix our `RUN` line to add the executable bit: `chmod +x setup-nginx.sh` an
 > docker run -p 8080:80 -d nginx-broken2
 ```
 
-See how it crashes right away?  Run `docker ps -a` to see what happened. What stage actually broke?
+See how it crashes right away?  Run `docker ps -a|head` to see what happened. What stage actually broke?
 
 Try looking at the logs.  In this case, it's so broken, the logs don't help much:
 
@@ -135,7 +142,7 @@ Try starting up the Wordpress stack:
 Note: if you're on a non-Linux box, ensure that Docker can access `/tmp`.
 
 ```bash
-> mkdir -p /tmp/wp-demo/{html,database}
+> mkdir -p /tmp/wp-demo-ops/{html,database}
 > docker-compose -f wordpress.yml up -d
 ```
 
@@ -156,6 +163,13 @@ the same network. Paste in the value of `MYSQL_ROOT_PASSWORD` from the `wordpres
 
 So we can see that that MariaDB is fine. Now we've isolated the issue to being the connection between
 Wordpress and MariaDB.  Take a look at the Wordpress environmental variables.
+
+### Extra 
+
+If you setup the Wordpress demo in an earlier lesson (see `examples/docker-compose/Instructions.md`) *and* still have the `/tmp/wp-demo/*` 
+directories, try changing the `volumes` directive to `- /tmp/wp-demo/database:/var/lib/mysql` and fix the password.  Try loading 
+[http://localhost](http://localhost) now - why don't you have to setup WordPress again?
+
 
 ### Class Project
 

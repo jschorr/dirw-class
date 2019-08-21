@@ -16,4 +16,4 @@ services:
     - MYSQL_ROOT_PASSWORD=V^TnM@D79628+892mWq3
     - MYSQL_DATABASE=wordpress
     volumes:
-    - /tmp/wp-demo/database:/var/lib/mysql
+    - /tmp/wp-demo-ops/database:/var/lib/mysql
