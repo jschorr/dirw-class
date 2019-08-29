@@ -35,7 +35,7 @@ Note the size.
 
 ## Excercise
 
-Update the Dockerfile to make it multi-stage the runtime image based upon scratch.  Hint: see `examples/docker/size-hello_world/Dockerfile-efficient`.  Build it again: `> docker build -t rust-hello-world-efficient .` and try running it.
+Update the Dockerfile to make it multi-stage the runtime image based upon alpine.  See `examples/docker/size-hello_world/Dockerfile-efficient` for what a multi-stage build looks like.  Build it again: `> docker build -t rust-hello-world-efficient .` and try running it.
 
 * Try building the new image.  How much smaller was this image?
 * Try overriding the entrypoint upon runtime with a shell.  What do you notice?

@@ -1,0 +1,19 @@
+FROM frolvlad/alpine-rust AS build
+
+WORKDIR /app
+
+COPY src/main.rs .
+
+RUN rustc -O -o hello-world ./main.rs
+
+
+FROM alpine
+
+RUN apk add --no-cache libgcc
+
+WORKDIR /app
+
+COPY --from=build /app/hello-world ./
+
+CMD ["/app/hello-world"]
+
